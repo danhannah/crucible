@@ -140,6 +140,27 @@ Baselines land at `~/.crucible/baselines/<project>/<spec>/{baseline.png,meta.jso
 
 ---
 
+## CLI
+
+The `crucible` binary handles operator tasks that don't fit the MCP server's request/response model — primarily interactive auth.
+
+```bash
+# Drive interactive login for a cookie-handoff adapter
+crucible login --adapter=my-app
+
+# Or with CRUCIBLE_ADAPTER set
+CRUCIBLE_ADAPTER=my-app crucible login
+
+# Help
+crucible --help
+```
+
+`crucible login` opens a non-headless chromium window pointed at the adapter's URL, waits for the user to complete SSO/2FA, then captures Playwright `storageState` to `~/.crucible/state/<adapter>.json` (mode `0600`). Press **Ctrl+C** in the launching terminal to save and exit. Subsequent headless MCP runs reuse the captured state until it expires.
+
+Exit codes: `0` success, `1` capture/adapter error, `2` usage error.
+
+---
+
 ## Adapters
 
 Crucible is project-agnostic. Each app it points at is described by a small **adapter** that declares its base URL and auth strategy. The `foundry` adapter ships built-in as a reference (`auth: none`, default URL `127.0.0.1:54321`). Any other app supplies its own.
