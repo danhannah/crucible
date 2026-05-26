@@ -1,16 +1,26 @@
 import { chromium } from 'playwright';
+import { promises as fs } from 'node:fs';
 
-export function createPlaywrightDriver({ viewport } = {}) {
+export function createPlaywrightDriver({ viewport, storageStatePath, headless = true } = {}) {
   let browser = null;
   let context = null;
   let page = null;
 
   async function ensurePage() {
     if (!browser) {
-      browser = await chromium.launch({ headless: true });
+      browser = await chromium.launch({ headless });
     }
     if (!context) {
-      context = await browser.newContext({ viewport });
+      const contextOpts = { viewport };
+      if (storageStatePath) {
+        try {
+          await fs.access(storageStatePath);
+          contextOpts.storageState = storageStatePath;
+        } catch {
+          // No saved state yet — start unauthenticated. captureStorageState fills this on first login.
+        }
+      }
+      context = await browser.newContext(contextOpts);
     }
     if (!page) {
       page = await context.newPage();
