@@ -98,6 +98,7 @@ Restart Claude Code to pick up the server. Crucible's tools will appear with the
 | `list_baselines` | List all stored baselines (the regression suite). |
 | `run_script` | Run arbitrary JS in the page via `page.evaluate` — set auth tokens, inject CSS, mask dynamic content. |
 | `click` | Click an element by CSS selector. |
+| `read_window_global` | Read a top-level `window[name]` property as JSON. Strict identifier check (no nested paths). Returns `{ ok, exists, value }` so undefined and explicit null are distinguishable. |
 
 Coming in v0.2: `boot_project` / `teardown_project` / `seed` (Docker-based harness), plus `type` / `scroll` / `wait_for` (generic browser interaction).
 

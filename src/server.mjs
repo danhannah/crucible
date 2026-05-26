@@ -10,8 +10,9 @@ import * as approveTool from './tools/approve-baseline.mjs';
 import * as listBaselinesTool from './tools/list-baselines.mjs';
 import * as runScriptTool from './tools/run-script.mjs';
 import * as clickTool from './tools/click.mjs';
+import * as readWindowGlobalTool from './tools/read-window-global.mjs';
 
-const TOOLS = [navigateTool, screenshotTool, compareTool, approveTool, listBaselinesTool, runScriptTool, clickTool];
+const TOOLS = [navigateTool, screenshotTool, compareTool, approveTool, listBaselinesTool, runScriptTool, clickTool, readWindowGlobalTool];
 
 export function createCrucibleServer({ session } = {}) {
   const sess = session || createSession();
