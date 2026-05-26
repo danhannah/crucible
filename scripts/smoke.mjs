@@ -1,27 +1,22 @@
 #!/usr/bin/env node
-// Smoke test for Crucible v0.1 against the foundry test-env.
+// Smoke test for Crucible — drives the eyes flow against any reachable URL.
 //
-// Assumes the test-env is already running. Boot it with:
-//   test-env/scripts/up.sh smoke 54321
+// Set CRUCIBLE_SMOKE_URL to the app you want to verify. Defaults to
+// http://127.0.0.1:3000 — change it via env var, not by editing this file:
 //
-// Usage:
-//   node packages/crucible/scripts/smoke.mjs            # uses CRUCIBLE_TEST_ENV_URL or http://127.0.0.1:54321
-//   PORT=54321 node packages/crucible/scripts/smoke.mjs
+//   CRUCIBLE_SMOKE_URL=http://127.0.0.1:54321/docs/sample node scripts/smoke.mjs
 //
-// Output: lands the first real baseline at
-//   ~/.crucible/baselines/foundry/sample-doc/{baseline.png,meta.json}
+// On first run, writes a baseline at:
+//   ~/.crucible/baselines/<project>/<spec>/{baseline.png,meta.json}
+//
+// On subsequent runs, diffs the new screenshot against the stored baseline
+// and prints the match score.
 
 import { createSession } from '../src/session.mjs';
 
-const baseUrl =
-  process.env.CRUCIBLE_TEST_ENV_URL ||
-  (process.env.PORT ? `http://127.0.0.1:${process.env.PORT}` : 'http://127.0.0.1:54321');
-
-const targetPath = '/docs/projects/sample/design';
-const targetUrl = baseUrl + targetPath;
-
-const PROJECT = 'foundry';
-const SPEC = 'sample-doc';
+const targetUrl = process.env.CRUCIBLE_SMOKE_URL || 'http://127.0.0.1:3000';
+const PROJECT = process.env.CRUCIBLE_SMOKE_PROJECT || 'crucible-smoke';
+const SPEC = process.env.CRUCIBLE_SMOKE_SPEC || 'home';
 
 function log(msg) {
   process.stderr.write(`[crucible:smoke] ${msg}\n`);
@@ -29,14 +24,16 @@ function log(msg) {
 
 async function main() {
   log(`target: ${targetUrl}`);
+  log(`baseline: ${PROJECT}/${SPEC}`);
 
-  // Quick reachability probe so we fail fast with a clear message.
   try {
-    const res = await fetch(baseUrl + '/api/health');
-    if (!res.ok) throw new Error(`health responded ${res.status}`);
+    const res = await fetch(targetUrl, { method: 'HEAD' }).catch(() => fetch(targetUrl));
+    if (!res.ok && res.status !== 405) {
+      log(`warning: target responded ${res.status} — continuing anyway`);
+    }
   } catch (err) {
-    log(`test-env unreachable at ${baseUrl}: ${err.message}`);
-    log(`boot it with: test-env/scripts/up.sh smoke 54321`);
+    log(`target unreachable at ${targetUrl}: ${err.message}`);
+    log(`set CRUCIBLE_SMOKE_URL to point at a running app`);
     process.exit(2);
   }
 
@@ -71,8 +68,8 @@ async function main() {
           url,
           viewport,
           browser: session.config.browser,
-          approvedBy: 'crucible-v0.1-smoke',
-          note: 'first baseline from smoke.mjs against foundry test-env',
+          approvedBy: 'crucible-smoke',
+          note: `first baseline from smoke.mjs against ${targetUrl}`,
         },
       });
       log(`baseline written:`);

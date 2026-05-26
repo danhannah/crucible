@@ -6,8 +6,8 @@ export const name = 'compare_screenshots';
 export const config = {
   description: 'Diff a screenshot against a stored baseline using pixelmatch. If `pngBase64` is omitted, the most recent screenshot from this session is used. Returns match score, pixel counts, and a verdict (pass/fail/needs_review). Verdict is "pass" if matchScore >= 1 - matchTolerance, otherwise "needs_review" if no baseline exists, otherwise "fail".',
   inputSchema: {
-    project: z.string().describe('Project segment (e.g. "foundry").'),
-    spec: z.string().describe('Spec segment (e.g. "annotations-reply-flow").'),
+    project: z.string().describe('Project segment (e.g. "my-app"). Identifies the app under test in the baseline store.'),
+    spec: z.string().describe('Spec segment (e.g. "homepage" or "checkout-flow"). Identifies the page or component within the project.'),
     pngBase64: z.string().optional().describe('Optional base64 PNG to compare. Defaults to the last screenshot captured in this session.'),
     threshold: z.number().min(0).max(1).optional().describe('Pixelmatch per-pixel YIQ threshold. Defaults to 0.1.'),
     matchTolerance: z.number().min(0).max(1).optional().describe('How much pixel mismatch to tolerate for a pass verdict. Defaults to 0.001 (0.1%).'),

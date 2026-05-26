@@ -5,7 +5,7 @@ export const name = 'list_baselines';
 export const config = {
   description: 'List all stored baselines. If a project is specified, lists specs for that project with metadata. If no project is specified, lists all projects and their specs. Used by the regression QA agent to discover its test suite.',
   inputSchema: {
-    project: z.string().optional().describe('Optional project filter (e.g. "foundry"). If omitted, lists all projects.'),
+    project: z.string().optional().describe('Optional project filter (e.g. "my-app"). If omitted, lists all projects.'),
   },
 };
 

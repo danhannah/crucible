@@ -12,16 +12,20 @@ Check all stored baselines for **[project name]** to verify no visual regression
 
 **Always boot a fresh test-env for regression QA.** Do not reuse long-running instances — they may be running stale code. A fresh build from the target branch guarantees you're testing current code with clean seed data.
 
+The boot/teardown commands are project-specific. Common patterns:
+
 ```bash
-# Boot fresh test-env from the target branch
-test-env/scripts/qa.sh [branch]     # e.g. "main" for regression, or a feature branch
-# Output includes the port — use that URL for all baselines
+# Docker compose-based projects
+docker compose -f test-env/docker-compose.yml up -d
+# Custom test-env scripts
+test-env/scripts/up.sh [branch]
+# Or a Makefile target
+make test-env
 ```
 
-After the regression sweep completes, tear down:
-```bash
-test-env/scripts/qa-cleanup.sh [branch]
-```
+Note the URL the test-env reports and use it for all baselines this run.
+
+After the regression sweep completes, tear down with the corresponding `down` command.
 
 If the orchestrator already booted a fresh test-env for feature QA (from the same branch), reuse that URL instead of booting a second instance.
 
@@ -40,11 +44,11 @@ Each baseline may require specific setup before screenshotting. Read the baselin
 | Setup Pattern | How to Apply |
 |---------------|-------------|
 | **Unauthenticated** | No setup needed — just navigate and screenshot |
-| **Authenticated** | Open the token modal (click `.thread-auth-prompt button`), fill the input (`.token-modal__input`), and submit (`.token-modal__submit`) with 'test-token'. Note: `navigate` resets page context, so authenticate AFTER navigating. |
-| **Modal open** | Navigate, authenticate if needed, then click the trigger element (e.g. `.settings-gear-btn` for settings, `.search-modal__icon-button` for search) |
-| **Dark mode** | Authenticate, open settings (`.settings-gear-btn`), click the "Dark" radio label (`.settings-radio` with text "Dark"), close settings |
-| **Expanded thread** | Authenticate, then click `.thread-replies-toggle` to expand the reply thread |
-| **Draft visible** | Authenticate. A draft annotation must exist in the test-env's database — create one via the test-env API if needed: `POST /api/annotations` with `author_type: "human"` (defaults to draft status) |
+| **Authenticated** | Use the app's auth flow — typically set a token via `run_script` (`localStorage.setItem`) or fill a login form via `click` + `run_script`. Note: `navigate` resets page context, so authenticate AFTER navigating. |
+| **Modal open** | Navigate, authenticate if needed, then click the trigger element (e.g. `.settings-button`, `.menu-trigger`) |
+| **Theme variant (dark/light)** | Apply the theme through the app's own toggle (e.g. click a theme switcher button or `run_script` to set the appropriate `localStorage` key / `data-theme` attribute) |
+| **Expanded UI section** | Click the toggle/expander before screenshotting (e.g. `.replies-toggle`, `.show-more-button`) |
+| **Specific app state** | Use the app's API or MCP tools to seed the required data before navigating (e.g. create a record, set a feature flag) |
 | **fullPage screenshot** | If the baseline's height > viewport height (800px), use `screenshot_page(fullPage: true)` |
 
 ## Dynamic Content Masking

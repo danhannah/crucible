@@ -1,11 +1,42 @@
 {
-  "name": "@foundry/crucible",
+  "name": "@claymore-dev/crucible",
   "version": "0.1.0",
-  "private": true,
-  "description": "Project-agnostic test harness & visual regression MCP — v0.1 Eyes Only",
+  "description": "Agentic QA framework — visual verification, baseline management, and a project-agnostic MCP server that gives AI coding agents eyes.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "visual-regression",
+    "agentic-qa",
+    "playwright",
+    "pixelmatch",
+    "ai-agents",
+    "claude"
+  ],
+  "license": "MIT",
+  "author": "Dan Hannah <dan.hannah94@gmail.com>",
+  "homepage": "https://github.com/danhannah94/crucible#readme",
+  "bugs": {
+    "url": "https://github.com/danhannah94/crucible/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danhannah94/crucible.git"
+  },
   "type": "module",
+  "main": "src/server.mjs",
   "bin": {
     "crucible-mcp": "./bin/crucible-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/",
+    "README.md",
+    "DECISIONS.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
     "start": "node bin/crucible-mcp.mjs",

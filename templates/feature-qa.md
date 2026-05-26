@@ -15,24 +15,24 @@ Verify that **[feature description]** was implemented correctly and is visually 
 ## Where to Look
 
 - **Primary pages:** [URLs where the feature change is visible]
-- **Entry point:** [How to navigate to the feature — e.g. "Go to /docs/projects/sample/design/ and open the review panel"]
+- **Entry point:** [How to navigate to the feature — e.g. "Go to /checkout and click Add to Cart"]
 - **Related pages:** [Pages that might be affected by the change]
 
 ## Success Criteria
 
-- [ ] [Specific visual/functional check — e.g. "New annotation appears in the review panel with correct author and timestamp"]
-- [ ] [Specific visual/functional check — e.g. "Reply thread renders with proper indentation"]
-- [ ] [Specific visual/functional check — e.g. "Markdown formatting in annotation body renders correctly (bold, code, links)"]
+- [ ] [Specific visual/functional check — e.g. "Cart badge increments to show item count"]
+- [ ] [Specific visual/functional check — e.g. "Item appears in cart sidebar with correct price"]
+- [ ] [Specific visual/functional check — e.g. "Checkout button becomes enabled"]
 
 ## Also Check
 
-- Regression in [related areas — e.g. "other annotations on the same page still render correctly"]
-- [Known fragile areas — e.g. "navigation sidebar should not collapse unexpectedly"]
+- Regression in [related areas — e.g. "product detail page still renders correctly"]
+- [Known fragile areas — e.g. "header navigation should not shift when cart updates"]
 
 ## Available Tools
 
 **App MCP tools (use these for interaction):**
-- [List domain-specific tools — e.g. `mcp__foundry__create_annotation`, `mcp__foundry__edit_annotation`, `mcp__foundry__get_page`]
+- [List domain-specific tools — e.g. `mcp__myapp__create_X`, `mcp__myapp__update_Y`, `mcp__myapp__get_Z`]
 
 **Crucible tools (use these for visual verification):**
 - `navigate` — go to a URL
@@ -45,7 +45,7 @@ Verify that **[feature description]** was implemented correctly and is visually 
 **Note:** You do NOT have `approve_baseline`. Baseline approval is the orchestrator's responsibility. If your findings warrant a baseline update, recommend it in your report and the orchestrator will approve after review.
 
 **Existing baselines:**
-- [List from `list_baselines(project: "...")` — e.g. "foundry/homepage (1280x800)", "foundry/sample-doc-full (1280x1601)"]
+- [List from `list_baselines(project: "...")` — e.g. "my-app/homepage (1280x800)", "my-app/checkout-empty (1280x1601)"]
 
 ## How to Work
 

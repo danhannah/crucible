@@ -5,8 +5,8 @@ export const name = 'approve_baseline';
 export const config = {
   description: 'Write the current (or provided) screenshot as the baseline for a project/spec. In v0.1 this is the only path that creates baselines — later versions will add diff-review flows. Overwrites any existing baseline for the same project/spec.',
   inputSchema: {
-    project: z.string().describe('Project segment (e.g. "foundry").'),
-    spec: z.string().describe('Spec segment (e.g. "annotations-reply-flow").'),
+    project: z.string().describe('Project segment (e.g. "my-app"). Identifies the app under test in the baseline store.'),
+    spec: z.string().describe('Spec segment (e.g. "homepage" or "checkout-flow"). Identifies the page or component within the project.'),
     pngBase64: z.string().optional().describe('Optional base64 PNG. Defaults to the last screenshot captured in this session.'),
     note: z.string().optional().describe('Optional free-form note stored in the baseline meta.'),
   },

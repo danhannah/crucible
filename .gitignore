@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+*.log
+coverage/
+.vitest-cache/
+
+# Crucible runtime artifacts
+.crucible/
+/tmp/
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
