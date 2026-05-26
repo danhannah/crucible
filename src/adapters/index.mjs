@@ -2,6 +2,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promises as fs } from 'node:fs';
 import * as foundry from './foundry.mjs';
+import { storageStatePathFor } from './storage-state.mjs';
 
 /**
  * @typedef {Object} Adapter
@@ -37,12 +38,16 @@ export function listAdapters() {
   return Array.from(REGISTRY.keys());
 }
 
-export function resolveAdapter(name, { url } = {}) {
+export function resolveAdapter(name, { url, storageStateRoot } = {}) {
   const def = REGISTRY.get(name);
   if (!def) {
     throw new Error(`unknown adapter "${name}". known: ${listAdapters().join(', ') || '(none)'}. Register one via crucible.config.mjs or defineAdapter().`);
   }
-  return def.createAdapter({ url });
+  const adapter = def.createAdapter({ url });
+  if (adapter.authStrategy === 'cookie-handoff' && !adapter.storageStatePath) {
+    adapter.storageStatePath = storageStatePathFor(adapter.name, storageStateRoot ? { root: storageStateRoot } : {});
+  }
+  return adapter;
 }
 
 function registerBuiltIns() {

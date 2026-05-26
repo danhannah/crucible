@@ -4,7 +4,10 @@ import { resolveConfig } from './config.mjs';
 
 export function createSession({ config } = {}) {
   const cfg = config || resolveConfig();
-  const driver = createPlaywrightDriver({ viewport: cfg.viewport });
+  const driver = createPlaywrightDriver({
+    viewport: cfg.viewport,
+    storageStatePath: cfg.adapter?.storageStatePath,
+  });
   const baselines = createBaselineStore({ rootDir: cfg.baselineRoot });
 
   let lastScreenshot = null;

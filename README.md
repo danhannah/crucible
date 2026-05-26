@@ -159,9 +159,18 @@ export default [
 ];
 ```
 
-Then run with `CRUCIBLE_ADAPTER=my-app CRUCIBLE_MY_APP_URL=https://my-app.example.com`. The auth-strategy field is informational in v0.1; v0.2 wires `cookie-handoff` to a `crucible login` flow that captures Playwright `storageState` for re-use.
+Then run with `CRUCIBLE_ADAPTER=my-app CRUCIBLE_MY_APP_URL=https://my-app.example.com`.
 
 You can also register adapters programmatically by importing `defineAdapter` from `@claymore-dev/crucible/src/adapters/index.mjs`.
+
+### Auth strategies
+
+| Strategy | Behavior |
+|----------|----------|
+| `none` | No auth. Default for `foundry`. |
+| `cookie-handoff` | Adapter loads Playwright `storageState` from `~/.crucible/state/<adapter>.json` (mode `0600`, parent dir `0700`). The user runs `crucible login --adapter=<name>` (M-C3) once to drive interactive SSO/2FA in a non-headless browser; the captured `storageState` is reused on every subsequent headless run. If the file doesn't exist, sessions start unauthenticated. Expired session tokens currently surface as 401s at request time — re-run `crucible login` to refresh. M-C4 will detect this automatically and fail loud with the right message. |
+
+For programmatic capture, import `captureStorageState` from `src/adapters/login.mjs`.
 
 ---
 
