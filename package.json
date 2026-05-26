@@ -25,6 +25,7 @@
   "type": "module",
   "main": "src/server.mjs",
   "bin": {
+    "crucible": "./bin/crucible.mjs",
     "crucible-mcp": "./bin/crucible-mcp.mjs"
   },
   "files": [
