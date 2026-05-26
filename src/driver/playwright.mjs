@@ -1,22 +1,30 @@
 import { chromium } from 'playwright';
 import { promises as fs } from 'node:fs';
 
-export function createPlaywrightDriver({ viewport, storageStatePath, headless = true } = {}) {
+export function createPlaywrightDriver({ viewport, storageStatePath } = {}) {
   let browser = null;
   let context = null;
   let page = null;
 
   async function ensurePage() {
     if (!browser) {
-      browser = await chromium.launch({ headless });
+      browser = await chromium.launch({ headless: true });
     }
     if (!context) {
       const contextOpts = { viewport };
       if (storageStatePath) {
         try {
-          await fs.access(storageStatePath);
-          contextOpts.storageState = storageStatePath;
-        } catch {
+          const raw = await fs.readFile(storageStatePath, 'utf8');
+          try {
+            contextOpts.storageState = JSON.parse(raw);
+          } catch (parseErr) {
+            throw new Error(
+              `crucible: storage state at ${storageStatePath} is corrupt (${parseErr.message}). ` +
+              `Delete the file and re-run \`crucible login\` to refresh.`,
+            );
+          }
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err;
           // No saved state yet — start unauthenticated. captureStorageState fills this on first login.
         }
       }

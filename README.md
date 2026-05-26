@@ -168,7 +168,7 @@ You can also register adapters programmatically by importing `defineAdapter` fro
 | Strategy | Behavior |
 |----------|----------|
 | `none` | No auth. Default for `foundry`. |
-| `cookie-handoff` | Adapter loads Playwright `storageState` from `~/.crucible/state/<adapter>.json`. The user runs `crucible login --adapter=<name>` (M-C3) once to drive interactive SSO/2FA in a non-headless browser; the captured `storageState` is reused on every subsequent headless run. If the file doesn't exist, sessions start unauthenticated and any authenticated request will fail loud (M-C4). |
+| `cookie-handoff` | Adapter loads Playwright `storageState` from `~/.crucible/state/<adapter>.json` (mode `0600`, parent dir `0700`). The user runs `crucible login --adapter=<name>` (M-C3) once to drive interactive SSO/2FA in a non-headless browser; the captured `storageState` is reused on every subsequent headless run. If the file doesn't exist, sessions start unauthenticated. Expired session tokens currently surface as 401s at request time — re-run `crucible login` to refresh. M-C4 will detect this automatically and fail loud with the right message. |
 
 For programmatic capture, import `captureStorageState` from `src/adapters/login.mjs`.
 

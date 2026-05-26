@@ -9,8 +9,12 @@ import { writeStorageState } from './storage-state.mjs';
  * Termination signal: SIGINT (Ctrl+C in the launching terminal). The browser
  * stays alive until the signal arrives so `context.storageState()` can be
  * read while the page is still open. The browser-close event is a fallback
- * for users who close the window directly — state is captured on every page
- * navigation so the most recent snapshot is always available.
+ * for users who close the window directly — state is captured on every
+ * main-frame navigation so the most recent snapshot is always available.
+ *
+ * Note: this hooks process-level SIGINT by default. Long-lived host processes
+ * that don't want their own SIGINT handler displaced should pass
+ * `installSignalHandler: false` and resolve a signal of their own choosing.
  *
  * Returns the path the state was written to.
  */
@@ -39,7 +43,9 @@ export async function captureStorageState({
     }
   };
 
-  page.on('framenavigated', () => { snapshotState(); });
+  page.on('framenavigated', (frame) => {
+    if (frame === page.mainFrame()) snapshotState();
+  });
 
   try {
     await page.goto(adapter.url, { waitUntil: 'load', timeout: 60_000 });
