@@ -130,7 +130,9 @@ Baselines land at `~/.crucible/baselines/<project>/<spec>/{baseline.png,meta.jso
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
-| `CRUCIBLE_TEST_ENV_URL` | `http://127.0.0.1:54321` | Default URL used when none is passed. Most agents pass URLs explicitly to `navigate`. |
+| `CRUCIBLE_ADAPTER` | `foundry` | Active adapter name. Built-in: `foundry`, `blackwing`. |
+| `CRUCIBLE_<NAME>_URL` | — | Per-adapter URL. e.g. `CRUCIBLE_BLACKWING_URL=https://blackwing.gmppu.com`. |
+| `CRUCIBLE_TEST_ENV_URL` | `http://127.0.0.1:54321` | Legacy alias for `CRUCIBLE_FOUNDRY_URL`. Used when adapter is `foundry` and no `CRUCIBLE_FOUNDRY_URL` is set. Most agents pass URLs explicitly to `navigate`. |
 | `CRUCIBLE_BASELINE_ROOT` | `~/.crucible/baselines` | Where baselines are stored. |
 | `CRUCIBLE_SMOKE_URL` | `http://127.0.0.1:3000` | URL the `npm run smoke` script targets. |
 | `CRUCIBLE_SMOKE_PROJECT` | `crucible-smoke` | Project name for the smoke baseline. |
