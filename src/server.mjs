@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 import { createSession } from './session.mjs';
+import { loadAdaptersFromConfig } from './adapters/index.mjs';
 import * as navigateTool from './tools/navigate.mjs';
 import * as screenshotTool from './tools/screenshot-page.mjs';
 import * as compareTool from './tools/compare-screenshots.mjs';
@@ -33,6 +34,7 @@ export function createCrucibleServer({ session } = {}) {
 }
 
 export async function startStdioServer() {
+  await loadAdaptersFromConfig();
   const { mcp, shutdown } = createCrucibleServer();
 
   const onExit = async () => {
