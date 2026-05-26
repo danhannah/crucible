@@ -26,6 +26,28 @@ export function createHandler(session) {
       waitUntil: args.waitUntil,
       timeoutMs: args.timeoutMs,
     });
+
+    if (result.status === 401) {
+      const adapterName = session.config?.adapter?.name;
+      const remedy = adapterName
+        ? `Run: crucible login --adapter=${adapterName}`
+        : 'Configure an adapter and run `crucible login --adapter=<name>`.';
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              ok: false,
+              status: 401,
+              url: result.url,
+              error: `ALB returned 401. ${remedy}`,
+            }),
+          },
+        ],
+      };
+    }
+
     return {
       content: [
         {
