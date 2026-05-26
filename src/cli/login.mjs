@@ -1,10 +1,42 @@
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
 import {
   loadAdaptersFromConfig,
-  resolveAdapter,
   listAdapters,
 } from '../adapters/index.mjs';
+import { resolveConfig } from '../config.mjs';
 import { captureStorageState } from '../adapters/login.mjs';
 
+/**
+ * @typedef {Object} CliIO
+ * @property {(msg: string) => void} out  - Writes to stdout (final results meant for pipes)
+ * @property {(msg: string) => void} err  - Writes to stderr (status, errors, hints)
+ * @property {Record<string, string|undefined>} env - Environment variables
+ */
+
+/**
+ * @typedef {CliIO & {
+ *   flags?: Record<string, string|boolean>,
+ *   capture?: typeof captureStorageState,
+ *   loadConfig?: typeof loadAdaptersFromConfig,
+ *   cwd?: string,
+ * }} RunLoginOptions
+ */
+
+async function configFileExists(cwd) {
+  for (const f of ['crucible.config.mjs', 'crucible.config.js']) {
+    try {
+      await fs.access(path.join(cwd, f));
+      return true;
+    } catch {}
+  }
+  return false;
+}
+
+/**
+ * @param {RunLoginOptions} opts
+ * @returns {Promise<number>} exit code
+ */
 export async function runLogin({
   flags,
   out,
@@ -12,6 +44,7 @@ export async function runLogin({
   env,
   capture = captureStorageState,
   loadConfig = loadAdaptersFromConfig,
+  cwd = process.cwd(),
 } = {}) {
   const adapterName = flags?.adapter || env?.CRUCIBLE_ADAPTER;
   if (!adapterName) {
@@ -20,21 +53,25 @@ export async function runLogin({
   }
 
   try {
-    await loadConfig();
+    await loadConfig({ cwd });
   } catch (e) {
     err(`crucible login: failed to load crucible.config.mjs (${e.message})`);
     return 1;
   }
 
-  let adapter;
+  let cfg;
   try {
-    const url = env?.[`CRUCIBLE_${adapterName.toUpperCase().replace(/-/g, '_')}_URL`];
-    adapter = resolveAdapter(adapterName, { url });
+    cfg = resolveConfig({ ...env, CRUCIBLE_ADAPTER: adapterName });
   } catch (e) {
     err(`crucible login: ${e.message}`);
     err(`known adapters: ${listAdapters().join(', ') || '(none registered)'}`);
+    if (!(await configFileExists(cwd))) {
+      err(`hint: no crucible.config.mjs found in ${cwd} — run from your project root, or register the adapter via defineAdapter().`);
+    }
     return 1;
   }
+
+  const adapter = cfg.adapter;
 
   if (adapter.authStrategy !== 'cookie-handoff') {
     err(`crucible login: adapter "${adapter.name}" uses authStrategy="${adapter.authStrategy}", which does not require an interactive login.`);
@@ -46,14 +83,14 @@ export async function runLogin({
     return 1;
   }
 
-  out(`crucible login: ${adapter.name} → ${adapter.url}`);
+  err(`crucible login: ${adapter.name} → ${adapter.url}`);
 
   try {
-    const path = await capture({
+    const savedPath = await capture({
       adapter,
       log: (msg) => err(msg),
     });
-    out(`crucible login: saved storageState to ${path}`);
+    out(savedPath);
     return 0;
   } catch (e) {
     err(`crucible login: capture failed (${e.message})`);

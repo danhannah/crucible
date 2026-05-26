@@ -67,6 +67,13 @@ describe('runCli', () => {
     expect(code).toBe(2);
     expect(sink.logs.err.join('\n')).toMatch(/unrecognized argument/);
   });
+
+  it('treats `--help` on a subcommand as help and exits 0', async () => {
+    const sink = captureLog();
+    const code = await runCli(['login', '--help'], { out: sink.out, err: sink.err, env: {} });
+    expect(code).toBe(0);
+    expect(sink.logs.out.join('\n')).toMatch(/Usage: crucible/);
+  });
 });
 
 describe('runLogin', () => {
@@ -144,7 +151,7 @@ describe('runLogin', () => {
     expect(sink.logs.err.join('\n')).toMatch(/has no URL.*CRUCIBLE_NO_URL_URL/);
   });
 
-  it('invokes captureStorageState for a valid adapter and returns 0', async () => {
+  it('invokes captureStorageState for a valid adapter, prints bare path on stdout, exits 0', async () => {
     defineAdapter({
       name: 'authed',
       createAdapter: ({ url }) => ({
@@ -169,7 +176,23 @@ describe('runLogin', () => {
     const [{ adapter }] = captured.mock.calls[0];
     expect(adapter.name).toBe('authed');
     expect(adapter.url).toBe('https://authed.example.com');
-    expect(sink.logs.out.join('\n')).toMatch(/saved storageState to \/tmp\/authed\.json/);
+    expect(sink.logs.out).toEqual(['/tmp/authed.json']);
+    expect(sink.logs.err.join('\n')).toMatch(/authed → https:\/\/authed\.example\.com/);
+  });
+
+  it('hints about wrong directory when no config and unknown adapter', async () => {
+    const sink = captureLog();
+    const code = await runLogin({
+      flags: { adapter: 'ghost' },
+      out: sink.out,
+      err: sink.err,
+      env: {},
+      capture: vi.fn(),
+      loadConfig: async () => null,
+      cwd: '/tmp/nope-this-dir-has-no-config',
+    });
+    expect(code).toBe(1);
+    expect(sink.logs.err.join('\n')).toMatch(/no crucible\.config\.mjs found/);
   });
 
   it('surfaces capture errors as exit code 1', async () => {
