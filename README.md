@@ -130,13 +130,38 @@ Baselines land at `~/.crucible/baselines/<project>/<spec>/{baseline.png,meta.jso
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
-| `CRUCIBLE_ADAPTER` | `foundry` | Active adapter name. Built-in: `foundry`, `blackwing`. |
-| `CRUCIBLE_<NAME>_URL` | — | Per-adapter URL. e.g. `CRUCIBLE_BLACKWING_URL=https://blackwing.gmppu.com`. |
+| `CRUCIBLE_ADAPTER` | `foundry` | Active adapter name. Built-in: `foundry`. Consumers register their own — see "Adapters" below. |
+| `CRUCIBLE_<NAME>_URL` | — | Per-adapter URL. e.g. `CRUCIBLE_MY_APP_URL=https://my-app.example.com`. Hyphens in adapter names map to underscores in the env-var name. |
 | `CRUCIBLE_TEST_ENV_URL` | `http://127.0.0.1:54321` | Legacy alias for `CRUCIBLE_FOUNDRY_URL`. Used when adapter is `foundry` and no `CRUCIBLE_FOUNDRY_URL` is set. Most agents pass URLs explicitly to `navigate`. |
 | `CRUCIBLE_BASELINE_ROOT` | `~/.crucible/baselines` | Where baselines are stored. |
 | `CRUCIBLE_SMOKE_URL` | `http://127.0.0.1:3000` | URL the `npm run smoke` script targets. |
 | `CRUCIBLE_SMOKE_PROJECT` | `crucible-smoke` | Project name for the smoke baseline. |
 | `CRUCIBLE_SMOKE_SPEC` | `home` | Spec name for the smoke baseline. |
+
+---
+
+## Adapters
+
+Crucible is project-agnostic. Each app it points at is described by a small **adapter** that declares its base URL and auth strategy. The `foundry` adapter ships built-in as a reference (`auth: none`, default URL `127.0.0.1:54321`). Any other app supplies its own.
+
+Register adapters from a `crucible.config.mjs` in your project root:
+
+```js
+// crucible.config.mjs
+export default [
+  {
+    name: 'my-app',
+    createAdapter: ({ url }) => {
+      if (!url) throw new Error('CRUCIBLE_MY_APP_URL is required');
+      return { name: 'my-app', url, authStrategy: 'cookie-handoff' };
+    },
+  },
+];
+```
+
+Then run with `CRUCIBLE_ADAPTER=my-app CRUCIBLE_MY_APP_URL=https://my-app.example.com`. The auth-strategy field is informational in v0.1; v0.2 wires `cookie-handoff` to a `crucible login` flow that captures Playwright `storageState` for re-use.
+
+You can also register adapters programmatically by importing `defineAdapter` from `@claymore-dev/crucible/src/adapters/index.mjs`.
 
 ---
 

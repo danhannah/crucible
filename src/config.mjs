@@ -12,20 +12,29 @@ export const DEFAULT_BROWSER = 'chromium';
 
 export const DEFAULT_ADAPTER = 'foundry';
 
+function envValue(env, key) {
+  const v = env[key];
+  return typeof v === 'string' && v.length > 0 ? v : undefined;
+}
+
+function envKeyForAdapter(name) {
+  return `CRUCIBLE_${name.toUpperCase().replace(/-/g, '_')}_URL`;
+}
+
 function adapterUrlFromEnv(name, env) {
-  const key = `CRUCIBLE_${name.toUpperCase()}_URL`;
-  if (env[key]) return env[key];
-  if (name === 'foundry' && env.CRUCIBLE_TEST_ENV_URL) return env.CRUCIBLE_TEST_ENV_URL;
+  const explicit = envValue(env, envKeyForAdapter(name));
+  if (explicit) return explicit;
+  if (name === 'foundry') return envValue(env, 'CRUCIBLE_TEST_ENV_URL');
   return undefined;
 }
 
 export function resolveConfig(env = process.env) {
-  const adapterName = env.CRUCIBLE_ADAPTER || DEFAULT_ADAPTER;
+  const adapterName = envValue(env, 'CRUCIBLE_ADAPTER') || DEFAULT_ADAPTER;
   const adapter = resolveAdapter(adapterName, { url: adapterUrlFromEnv(adapterName, env) });
   return {
     adapter,
     testEnvUrl: adapter.url,
-    baselineRoot: env.CRUCIBLE_BASELINE_ROOT || DEFAULT_BASELINE_ROOT,
+    baselineRoot: envValue(env, 'CRUCIBLE_BASELINE_ROOT') || DEFAULT_BASELINE_ROOT,
     viewport: DEFAULT_VIEWPORT,
     browser: DEFAULT_BROWSER,
   };
