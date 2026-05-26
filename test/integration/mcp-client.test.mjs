@@ -81,10 +81,10 @@ describe('crucible MCP server — stdio integration', () => {
     if (tmpRoot) await rm(tmpRoot, { recursive: true, force: true });
   });
 
-  it('lists all seven tools', async () => {
+  it('lists all eight tools', async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
-    expect(names).toEqual(['approve_baseline', 'click', 'compare_screenshots', 'list_baselines', 'navigate', 'run_script', 'screenshot_page']);
+    expect(names).toEqual(['approve_baseline', 'click', 'compare_screenshots', 'list_baselines', 'navigate', 'read_window_global', 'run_script', 'screenshot_page']);
   });
 
   it('drives the full eyes flow: navigate → screenshot → compare (needs_review) → approve → compare (pass)', async () => {
