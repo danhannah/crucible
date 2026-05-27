@@ -91,7 +91,7 @@ Restart Claude Code to pick up the server. Crucible's tools will appear with the
 
 | Tool | Purpose |
 |------|---------|
-| `navigate` | Go to a URL. Launches the browser on first call. Returns final URL + HTTP status. |
+| `navigate` | Go to a URL. Launches the browser on first call. Returns final URL + HTTP status. **`401` responses are surfaced as a tool error** with a remedy line: `"HTTP 401 (authentication required). Run: crucible login --adapter=<name>"`. No silent retries; other status codes (403, 404, 5xx) pass through unchanged. To intentionally test an unauthenticated route, use `run_script` with `fetch()` and inspect the status yourself. |
 | `screenshot_page` | Full-page or viewport PNG. Saves to a temp file, returns the path + metadata. Caches in-session for `compare_screenshots`. |
 | `compare_screenshots` | Diff against a stored baseline via pixelmatch. Returns match score + verdict (`pass`/`fail`/`needs_review`). |
 | `approve_baseline` | Write the current screenshot as the baseline for a project/spec. |
@@ -190,7 +190,7 @@ You can also register adapters programmatically by importing `defineAdapter` fro
 | Strategy | Behavior |
 |----------|----------|
 | `none` | No auth. Default for `foundry`. |
-| `cookie-handoff` | Adapter loads Playwright `storageState` from `~/.crucible/state/<adapter>.json` (mode `0600`, parent dir `0700`). The user runs `crucible login --adapter=<name>` (M-C3) once to drive interactive SSO/2FA in a non-headless browser; the captured `storageState` is reused on every subsequent headless run. If the file doesn't exist, sessions start unauthenticated. Expired session tokens currently surface as 401s at request time — re-run `crucible login` to refresh. M-C4 will detect this automatically and fail loud with the right message. |
+| `cookie-handoff` | Adapter loads Playwright `storageState` from `~/.crucible/state/<adapter>.json` (mode `0600`, parent dir `0700`). The user runs `crucible login --adapter=<name>` once to drive interactive SSO/2FA in a non-headless browser; the captured `storageState` is reused on every subsequent headless run. If the file doesn't exist, sessions start unauthenticated. Expired session tokens surface as a `navigate` tool error: `"HTTP 401 (authentication required). Run: crucible login --adapter=<name>"` — no silent retries. |
 
 For programmatic capture, import `captureStorageState` from `src/adapters/login.mjs`.
 
