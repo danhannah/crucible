@@ -41,7 +41,7 @@ export function createHandler(session) {
               ok: false,
               status: 401,
               url: result.url,
-              error: `ALB returned 401. ${remedy}`,
+              error: `HTTP 401 (authentication required). ${remedy}`,
             }),
           },
         ],

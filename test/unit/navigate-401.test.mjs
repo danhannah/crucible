@@ -19,7 +19,7 @@ describe('navigate — 401 detection', () => {
     expect(body.ok).toBe(false);
     expect(body.status).toBe(401);
     expect(body.url).toBe('https://blackwing.example.com/');
-    expect(body.error).toBe('ALB returned 401. Run: crucible login --adapter=blackwing');
+    expect(body.error).toBe('HTTP 401 (authentication required). Run: crucible login --adapter=blackwing');
   });
 
   it('falls back to a generic remedy when no adapter is configured', async () => {
@@ -51,5 +51,13 @@ describe('navigate — 401 detection', () => {
     const res = await handler({ url: 'about:blank' });
     expect(res.isError).toBeUndefined();
     expect(parse(res).ok).toBe(true);
+  });
+
+  it('uses the active adapter in the remedy regardless of which URL was navigated', async () => {
+    // adapter context = 'blackwing', but the URL is unrelated. The remedy should still name the adapter.
+    const handler = createHandler(session({ status: 401, adapterName: 'blackwing' }));
+    const res = await handler({ url: 'https://some-other-domain.example.com/' });
+    expect(res.isError).toBe(true);
+    expect(parse(res).error).toMatch(/--adapter=blackwing/);
   });
 });
