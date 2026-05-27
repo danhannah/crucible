@@ -1,5 +1,32 @@
+import { promises as fs } from 'node:fs';
 import { chromium } from 'playwright';
 import { writeStorageState } from './storage-state.mjs';
+
+/**
+ * Headed Chromium under WSL2 + WSLg can freeze the host or trigger D3D
+ * driver crashes when its compositor process tries to use GPU acceleration
+ * through the WSLg shim. Disable GPU paths so the browser renders entirely
+ * on the CPU. Negligible perf cost during a one-shot interactive login;
+ * massive stability win.
+ *
+ * Detection reads `/proc/version` for "microsoft" / "WSL" tokens. Falsy
+ * (file missing, error, no match) means we're not on WSL and apply nothing.
+ */
+export async function detectWSL() {
+  try {
+    const v = await fs.readFile('/proc/version', 'utf8');
+    return /microsoft|wsl/i.test(v);
+  } catch {
+    return false;
+  }
+}
+
+export const WSL_LAUNCH_ARGS = Object.freeze([
+  '--disable-gpu',
+  '--disable-software-rasterizer',
+  '--disable-dev-shm-usage',
+  '--no-sandbox',
+]);
 
 /**
  * Open a non-headless browser at the adapter's URL and wait for the user to
@@ -22,6 +49,8 @@ export async function captureStorageState({
   adapter,
   log = (msg) => console.error(`[crucible login] ${msg}`),
   installSignalHandler = true,
+  isWSL = detectWSL,
+  launcher = chromium,
 } = {}) {
   if (!adapter) throw new Error('adapter is required');
   if (!adapter.url) throw new Error('adapter.url is required');
@@ -30,7 +59,13 @@ export async function captureStorageState({
   log(`launching non-headless chromium at ${adapter.url}`);
   log(`complete login in the browser, then press Ctrl+C in this terminal to save.`);
 
-  const browser = await chromium.launch({ headless: false });
+  const launchOpts = { headless: false };
+  if (await isWSL()) {
+    log('detected WSL — disabling GPU paths to avoid WSLg compositor crashes');
+    launchOpts.args = [...WSL_LAUNCH_ARGS];
+  }
+
+  const browser = await launcher.launch(launchOpts);
   const context = await browser.newContext();
   const page = await context.newPage();
 
